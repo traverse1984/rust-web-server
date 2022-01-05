@@ -3,14 +3,14 @@ use std::collections::HashMap;
 use crate::request::Request;
 use crate::response::HttpResponse;
 
-pub struct Route<'a> {
-    on: Option<Box<dyn Fn(&Request) -> HttpResponse<'a> + Send + Sync + 'static>>,
-    any: Option<Box<Route<'a>>>,
-    distinct: HashMap<&'a str, Route<'a>>,
+pub struct Route {
+    on: Option<Box<dyn Fn(&Request) -> HttpResponse + Send + Sync + 'static>>,
+    any: Option<Box<Route>>,
+    distinct: HashMap<&'static str, Route>,
 }
 
-impl<'a> Route<'a> {
-    pub fn new() -> Route<'a> {
+impl Route {
+    pub fn new() -> Route {
         Route {
             on: None,
             any: None,
@@ -45,8 +45,8 @@ impl<'a> Route<'a> {
 
     pub fn add(
         &mut self,
-        path: &'a str,
-        handler: impl Fn(&Request) -> HttpResponse<'a> + Send + Sync + 'static,
+        path: &'static str,
+        handler: impl Fn(&Request) -> HttpResponse + Send + Sync + 'static,
     ) {
         let mut route = self;
         for seg in Self::segment_vec(path) {
@@ -61,10 +61,7 @@ impl<'a> Route<'a> {
         route.set_handler(handler);
     }
 
-    fn set_handler(
-        &mut self,
-        handler: impl Fn(&Request) -> HttpResponse<'a> + Send + Sync + 'static,
-    ) {
+    fn set_handler(&mut self, handler: impl Fn(&Request) -> HttpResponse + Send + Sync + 'static) {
         self.on = Some(Box::new(handler));
     }
 
@@ -74,7 +71,7 @@ impl<'a> Route<'a> {
         }
     }
 
-    fn distinct_route(&mut self, seg: &'a str) {
+    fn distinct_route(&mut self, seg: &'static str) {
         if let None = self.distinct.get(seg) {
             self.distinct.insert(seg, Route::new());
         }
@@ -88,7 +85,7 @@ impl<'a> Route<'a> {
     pub fn route(
         &self,
         path: &str,
-    ) -> Option<&(dyn Fn(&Request) -> HttpResponse<'a> + Send + Sync + 'static)> {
+    ) -> Option<&(dyn Fn(&Request) -> HttpResponse + Send + Sync + 'static)> {
         let mut route = self;
         let mut catch = self;
 

@@ -1,14 +1,14 @@
 use std::collections::HashMap;
 use std::fmt::Display;
 
-pub struct HttpResponse<'a> {
+pub struct HttpResponse {
     status: HttpStatus,
     body: String,
-    headers: HashMap<&'a str, String>,
+    headers: HashMap<&'static str, String>,
 }
 
-impl<'a> HttpResponse<'a> {
-    pub fn new(status: HttpStatus) -> HttpResponse<'a> {
+impl HttpResponse {
+    pub fn new(status: HttpStatus) -> HttpResponse {
         HttpResponse {
             status,
             body: String::new(),
@@ -16,7 +16,7 @@ impl<'a> HttpResponse<'a> {
         }
     }
 
-    pub fn header(&mut self, key: &'a str, value: impl Display) -> &mut Self {
+    pub fn header(&mut self, key: &'static str, value: impl Display) -> &mut Self {
         if key.trim().to_lowercase() != "content-length" {
             self.headers.insert(key.trim(), format!("{}", value));
         }

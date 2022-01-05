@@ -1,5 +1,6 @@
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
@@ -11,25 +12,27 @@ const READ_INIT_TIMEOUT: u64 = 10;
 const READ_TIMEOUT_MS: u64 = 10;
 const READ_MAX_SIZE: usize = 1024 * 32;
 
-pub struct Server<'a> {
-    pub router: Route<'a>,
+pub struct Server {
+    pub router: Route,
 }
 
-impl<'a> Server<'a> {
-    pub fn new() -> &'static mut Server<'static> {
-        Box::leak(Box::new(Server {
+impl Server {
+    pub fn new() -> Server {
+        Server {
             router: Route::new(),
-        }))
+        }
     }
 
-    pub fn listen(&'static self, port: u16) {
+    pub fn listen(self, port: u16) {
         let addr = format!("0.0.0.0:{}", port);
         let listener = TcpListener::bind(addr).expect("Unable to open listener.");
+        let server = Arc::new(self);
 
         for stream in listener.incoming() {
+            let server = server.clone();
             thread::spawn(move || {
                 let mut stream = stream.unwrap();
-                let res = self.handle(&mut stream);
+                let res = server.handle(&mut stream);
                 stream.write(res.produce().as_bytes()).unwrap();
             });
         }

@@ -10,7 +10,7 @@ use server::Server;
 use std::thread;
 use std::time::Duration;
 
-fn named_route<'a>(name: &'static str) -> impl Fn(&Request) -> HttpResponse<'a> {
+fn named_route<'a>(name: &'static str) -> impl Fn(&Request) -> HttpResponse {
     move |req: &Request| {
         let mut res = HttpResponse::new(HttpStatus::Ok);
         res.header("Content-Type", "text/html")
@@ -21,7 +21,7 @@ fn named_route<'a>(name: &'static str) -> impl Fn(&Request) -> HttpResponse<'a> 
 }
 
 fn main() {
-    let server = Server::new();
+    let mut server = Server::new();
 
     server.router.add("*", named_route("default"));
     server.router.add("/match/*", named_route("/match/*"));
