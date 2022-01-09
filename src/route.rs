@@ -18,29 +18,33 @@ impl Route {
         }
     }
 
-    fn print_route(&self, indent_by: usize) {
+    fn print_route(&self, indent_by: usize) -> String {
+        let mut output = Vec::new();
+
         let indent = " ".repeat(indent_by);
         let handler = if let Some(_) = self.on { "yes" } else { "no" };
-        println!("{} handler: {}", indent, handler);
+        output.push(format!("{} handler: {}", indent, handler));
 
         if let Some(rt) = &self.any {
-            println!("{} wildcrd:", indent);
-            rt.print_route(indent_by + 2)
+            output.push(format!("{} wildcrd:", indent));
+            output.push(rt.print_route(indent_by + 2));
         } else {
-            println!("{} wildcrd: no", indent);
+            output.push(format!("{} wildcrd: no", indent));
         };
 
         if self.distinct.len() > 0 {
-            println!("{} statics:", indent);
+            output.push(format!("{} statics:", indent));
             for (&path, rt) in &self.distinct {
-                println!("{} * {}", indent, path);
-                rt.print_route(indent_by + 4);
+                output.push(format!("{} * {}", indent, path));
+                output.push(rt.print_route(indent_by + 4));
             }
         }
+
+        output.join("\n")
     }
 
-    pub fn print(&self) {
-        self.print_route(0);
+    pub fn print(&self) -> String {
+        self.print_route(0)
     }
 
     pub fn add(

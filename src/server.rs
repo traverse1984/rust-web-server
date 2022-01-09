@@ -1,9 +1,9 @@
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
-use std::sync::Arc;
-use std::thread;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use crate::pool::Pool;
 use crate::request::Request;
 use crate::response::*;
 use crate::route::Route;
@@ -23,14 +23,15 @@ impl Server {
         }
     }
 
-    pub fn listen(self, port: u16) {
+    pub fn listen(self, port: u16, pool: Arc<Mutex<Pool>>) {
         let addr = format!("0.0.0.0:{}", port);
         let listener = TcpListener::bind(addr).expect("Unable to open listener.");
         let server = Arc::new(self);
 
         for stream in listener.incoming() {
             let server = server.clone();
-            thread::spawn(move || {
+
+            pool.lock().unwrap().exec(move || {
                 let mut stream = stream.unwrap();
                 let res = server.handle(&mut stream);
                 stream.write(res.produce().as_bytes()).unwrap();

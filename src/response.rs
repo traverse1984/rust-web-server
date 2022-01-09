@@ -54,7 +54,7 @@ pub enum HttpStatus {
     BadRequest,
     Forbidden,
     NotFound,
-    InteralServerError,
+    InternalServerError,
 }
 
 impl HttpStatus {
@@ -64,7 +64,7 @@ impl HttpStatus {
             Self::BadRequest => "HTTP/1.1 400 Bad Request",
             Self::Forbidden => "HTTP/1.1 403 Forbidden",
             Self::NotFound => "HTTP/1.1 404 Not Found",
-            Self::InteralServerError => "HTTP/1.1 500 Internal Server Error",
+            Self::InternalServerError => "HTTP/1.1 500 Internal Server Error",
         }
     }
 }

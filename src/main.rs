@@ -1,8 +1,11 @@
+mod control;
+mod pool;
 mod request;
 mod response;
 mod route;
 mod server;
 
+use pool::Pool;
 use request::Request;
 use response::{HttpResponse, HttpStatus};
 use server::Server;
@@ -35,11 +38,11 @@ fn main() {
         slow(req)
     });
 
-    server.router.add("/daisy", move |req| {
+    server.router.add("/daisy", move |_| {
         let mut res = HttpResponse::new(HttpStatus::Ok);
         res.append("<h1>Hello Daisy :)</h1>");
         res
     });
 
-    server.listen(4000);
+    control::start_server(Pool::new(4), server, 4000);
 }
