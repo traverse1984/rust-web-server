@@ -13,7 +13,7 @@ use server::Server;
 use std::thread;
 use std::time::Duration;
 
-fn named_route<'a>(name: &'static str) -> impl Fn(&Request) -> HttpResponse {
+fn named_route(name: &'static str) -> impl Fn(&Request) -> HttpResponse {
     move |req: &Request| {
         let mut res = HttpResponse::new(HttpStatus::Ok);
         res.header("Content-Type", "text/html")
