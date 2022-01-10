@@ -8,9 +8,10 @@ use crate::server::Server;
 enum Command {
     Help,
     Print,
-    Unknown,
     Grow(usize),
     Shrink(usize),
+    Exit,
+    Unknown,
 }
 
 impl Command {
@@ -20,6 +21,7 @@ impl Command {
             "shrink" => Command::Shrink(count),
             "print" => Command::Print,
             "help" => Command::Help,
+            "exit" | "quit" => Command::Exit,
             _ => Command::Unknown,
         }
     }
@@ -32,8 +34,6 @@ pub fn start_server(pool: Pool, server: Server, port: u16) {
 
     thread::spawn(move || server.listen(port, server_pool));
 
-    let pool = || pool.lock().unwrap();
-
     loop {
         match accept_command() {
             Command::Help => {
@@ -42,13 +42,17 @@ pub fn start_server(pool: Pool, server: Server, port: u16) {
                 println!("   shrink <n> - Decrease capacity by <n> threads.");
                 println!("   print      - Show the router configuration.");
                 println!("   help       - Show this help.");
+                println!("   exit       - Exit the server.");
             }
             Command::Print => println!("{}", routes),
-            Command::Grow(by) => println!("{}", pool().grow(by)),
-            Command::Shrink(by) => println!("{}", pool().shrink(by)),
+            Command::Grow(by) => println!("{}", pool.lock().unwrap().grow(by)),
+            Command::Shrink(by) => println!("{}", pool.lock().unwrap().shrink(by)),
             Command::Unknown => println!("Unknown command."),
+            Command::Exit => break,
         }
     }
+
+    println!("Exiting.");
 }
 
 fn accept_command() -> Command {
